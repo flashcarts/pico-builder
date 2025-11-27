@@ -36,7 +36,7 @@
     },
     "R4": {
         "miniboot_paths": [
-            "generic/_ds_menu.dat"
+            "generic/_DS_MENU.DAT"
         ]
     },
     "R4DSPRO": {
