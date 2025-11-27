@@ -1,0 +1,54 @@
+{
+    "ACE3DS": {
+        "miniboot_paths": [
+            "ace3dsplus/*"
+        ]
+    },
+    "AK2": {
+        "miniboot_paths": [
+            "generic/akmenu4.nds",
+            "generic/dsedgei.dat",
+            "r4itt/*"
+        ]
+    },
+    "AKRPG": {
+    },
+    "DSPICO": {
+    },
+    "DSTT": {
+        "miniboot_paths": [
+            "generic/ttmenu.dat",
+            "generic/r4.dat",
+            "generic/scfw.sc"
+        ]
+    },
+    "G003": {
+    },
+    "GWBLUE": {
+        "miniboot_paths": [
+            "gwblue/*"
+        ]
+    },
+    "M3DS": {
+        "miniboot_paths": [
+            "m3ds/*"
+        ]
+    },
+    "R4": {
+        "miniboot_paths": [
+            "generic/_ds_menu.dat"
+        ]
+    },
+    "R4DSPRO": {
+        "miniboot_paths": [
+            "r4dspro/*"
+        ]
+    },
+    "R4iDSN": {
+        "miniboot_paths": [
+            "r4idsn/*"
+        ]
+    },
+    "SUPERCARD": {
+    }
+}

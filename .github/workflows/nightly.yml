@@ -1,0 +1,160 @@
+name: Build Pico packages
+
+on:
+  workflow_dispatch:
+
+jobs:
+  miniboot:
+    runs-on: ubuntu-latest
+    container: skylyrac/blocksds:slim-latest
+    name: Build miniboot
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+        with:
+          repository: 'asiekierka/nds-miniboot'
+          submodules: true
+      - name: Run build script
+        run: |
+          make -j`nproc`
+      - name: Publish build to GH Actions
+        uses: actions/upload-artifact@v5
+        with:
+          path: dist
+          name: miniboot_dist
+
+  pico_launcher:
+    runs-on: ubuntu-latest
+    container: skylyrac/blocksds:slim-v1.13.1
+    name: Build Pico Launcher
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+        with:
+          repository: 'LNH-team/pico-launcher'
+          submodules: true
+      - name: Run build script
+        run: |
+          make -j`nproc`
+      - name: Build file structure
+        run: |
+          mkdir out
+          cp LAUNCHER.nds out/_picoboot.nds
+          cp -r _pico out/
+      - name: Publish build to GH Actions
+        uses: actions/upload-artifact@v5
+        with:
+          path: out
+          name: pico_launcher
+
+  pico_loader:
+    strategy:
+      matrix:
+        platform: [
+          "ACE3DS",
+          "AK2",
+          "AKRPG",
+          "DSPICO",
+          "DSTT",
+          "G003",
+          "M3DS",
+          "R4",
+          "R4iDSN",
+          "SUPERCARD"
+        ]
+    runs-on: ubuntu-latest
+    container: skylyrac/blocksds:slim-v1.13.1
+    name: Build Pico Loader
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+      DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: 1
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+        with:
+          repository: 'LNH-team/pico-loader'
+          submodules: true
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 9.x
+      - name: Run build script
+        run: |
+          make PICO_PLATFORM=${{ matrix.platform }}
+      - name: Build file structure
+        run: |
+          mkdir -p out/_pico
+          cp picoLoader7.bin out/_pico/
+          cp picoLoader9_${{ matrix.platform }}.bin out/_pico/picoLoader9.bin
+          cp data/* out/_pico/
+      - name: Publish build to GH Actions
+        uses: actions/upload-artifact@v5
+        with:
+          path: out
+          name: pico_loader_${{ matrix.platform }}
+
+  pico_package:
+    strategy:
+      matrix:
+        platform:
+          - name: "ACE3DS"
+            pico_platform: ACE3DS
+          - name: "AK2"
+            pico_platform: AK2
+          - name: "AKRPG"
+            pico_platform: AKRPG
+          - name: "DSPICO"
+            pico_platform: DSPICO
+          - name: "DSTT"
+            pico_platform: DSTT
+          - name: "G003"
+            pico_platform: G003
+          - name: "GWBLUE"
+            pico_platform: ACE3DS
+          - name: "M3DS"
+            pico_platform: M3DS
+          - name: "R4"
+            pico_platform: R4
+          - name: "R4DSPRO"
+            pico_platform: AK2
+          - name: "R4iDSN"
+            pico_platform: R4iDSN
+          - name: "SUPERCARD"
+            pico_platform: SUPERCARD
+    runs-on: ubuntu-latest
+    needs: [
+      miniboot,
+      pico_launcher,
+      pico_loader
+    ]
+    env:
+      BUILD_PLATFORM: ${{ matrix.platform.name }}
+    name: Package zips
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+      - name: Download launcher
+        uses: actions/download-artifact@v6
+        with:
+          name: pico_launcher
+          path: pico_launcher
+      - name: Download miniboot
+        uses: actions/download-artifact@v6
+        with:
+          name: miniboot_dist
+          path: miniboot
+      - name: Download loader
+        uses: actions/download-artifact@v6
+        with:
+          name: pico_loader_${{ matrix.platform.pico_platform }}
+          path: pico_loader
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13' 
+      - name: Package
+        run: python3 packager.py
+      - name: Publish build to GH Actions
+        uses: actions/upload-artifact@v5
+        with:
+          path: out
+          name: pico_package_${{ matrix.platform.name }}
