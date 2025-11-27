@@ -19,7 +19,7 @@
         "miniboot_paths": [
             "generic/ttmenu.dat",
             "generic/r4.dat",
-            "generic/scfw.sc"
+            "dsonesdhc/*"
         ]
     },
     "G003": {
