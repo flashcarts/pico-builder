@@ -159,3 +159,29 @@ jobs:
         with:
           path: out
           name: pico_package_${{ matrix.platform.name }}
+
+  pico_deployment:
+    runs-on: ubuntu-24.04
+    needs: pico_package
+    name: Deploy to host
+    steps:
+      - uses: actions/download-artifact@v6
+        with:
+          pattern: pico_package_*
+          path: package
+      - name: Re-zip packages because GitHub sucks
+        run: |
+          mkdir -p out/package
+          MY_WD=$PWD
+          for i in package/*; do
+            cd $i
+            zip -r $MY_WD/out/$i.zip *
+            cd $MY_WD
+          done
+      - name: Publish
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.STORAGE_USER }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.STORAGE_KEY }}
+          AWS_ENDPOINT_URL: ${{ secrets.STORAGE_HOST }}
+        run: |
+          aws s3 sync out/package/ s3://${{ secrets.STORAGE_BUCKET }}
