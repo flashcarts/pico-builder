@@ -33,6 +33,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: 'LNH-team/pico-launcher'
+          ref: v1.0.0
           submodules: true
       - name: Run build script
         run: |
@@ -75,6 +76,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: 'LNH-team/pico-loader'
+          ref: v1.0.1
           submodules: true
       - uses: actions/setup-dotnet@v5
         with:
