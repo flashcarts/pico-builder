@@ -12,7 +12,8 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6
         with:
-          repository: 'asiekierka/nds-miniboot'
+          repository: 'lifehackerhansol/nds-miniboot'
+          ref: picoboot
           submodules: true
       - name: Run build script
         run: |
