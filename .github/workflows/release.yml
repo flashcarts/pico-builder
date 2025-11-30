@@ -91,7 +91,7 @@ jobs:
           mkdir -p out/_pico
           cp picoLoader7.bin out/_pico/
           cp picoLoader9_${{ matrix.platform }}.bin out/_pico/picoLoader9.bin
-          cp data/* out/_pico/
+          cp data/*.bin out/_pico/
       - name: Publish build to GH Actions
         uses: actions/upload-artifact@v5
         with:
