@@ -60,6 +60,7 @@ jobs:
           "AKRPG",
           "DSPICO",
           "DSTT",
+          "EZP",
           "G003",
           "M3DS",
           "R4",
@@ -78,7 +79,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: 'LNH-team/pico-loader'
-          ref: v1.0.1
+          ref: v1.1.0
           submodules: true
       - uses: actions/setup-dotnet@v5
         with:
@@ -112,6 +113,8 @@ jobs:
             pico_platform: DSPICO
           - name: "DSTT"
             pico_platform: DSTT
+          - name: "EZP"
+            pico_platform: EZP
           - name: "G003"
             pico_platform: G003
           - name: "GWBLUE"

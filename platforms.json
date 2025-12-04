@@ -15,6 +15,11 @@
     },
     "DSPICO": {
     },
+    "EZP": {
+        "miniboot_paths": [
+            "generic/ezds.dat"
+        ]
+    },
     "DSTT": {
         "miniboot_paths": [
             "generic/ttmenu.dat",
