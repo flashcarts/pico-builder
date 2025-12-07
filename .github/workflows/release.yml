@@ -51,54 +51,6 @@ jobs:
           path: out
           name: pico_launcher
 
-  pico_loader:
-    strategy:
-      matrix:
-        platform: [
-          "ACE3DS",
-          "AK2",
-          "AKRPG",
-          "DSPICO",
-          "DSTT",
-          "EZP",
-          "G003",
-          "M3DS",
-          "R4",
-          "R4iDSN",
-          "SUPERCARD"
-        ]
-    runs-on: ubuntu-latest
-    container: skylyrac/blocksds:slim-v1.13.1
-    name: Build Pico Loader
-    env:
-      DOTNET_CLI_TELEMETRY_OPTOUT: 1
-      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
-      DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: 1
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v6
-        with:
-          repository: 'LNH-team/pico-loader'
-          ref: v1.1.0
-          submodules: true
-      - uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: 9.x
-      - name: Run build script
-        run: |
-          make PICO_PLATFORM=${{ matrix.platform }}
-      - name: Build file structure
-        run: |
-          mkdir -p out/_pico
-          cp picoLoader7.bin out/_pico/
-          cp picoLoader9_${{ matrix.platform }}.bin out/_pico/picoLoader9.bin
-          cp data/*.bin out/_pico/
-      - name: Publish build to GH Actions
-        uses: actions/upload-artifact@v5
-        with:
-          path: out
-          name: pico_loader_${{ matrix.platform }}
-
   pico_package:
     strategy:
       matrix:
@@ -132,8 +84,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [
       miniboot,
-      pico_launcher,
-      pico_loader
+      pico_launcher
     ]
     env:
       BUILD_PLATFORM: ${{ matrix.platform.name }}
@@ -152,10 +103,10 @@ jobs:
           name: miniboot_dist
           path: miniboot
       - name: Download loader
-        uses: actions/download-artifact@v6
-        with:
-          name: pico_loader_${{ matrix.platform.pico_platform }}
-          path: pico_loader
+        run: |
+          curl -LO https://github.com/LNH-team/pico-loader/releases/download/v1.1.0/Pico_Loader_${{ matrix.platform.pico_platform }}.zip
+          mkdir -p pico_loader/_pico
+          cd pico_loader/_pico && unzip ../../Pico_Loader_${{ matrix.platform.pico_platform }}.zip
       - uses: actions/setup-python@v6
         with:
           python-version: '3.13' 
