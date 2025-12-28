@@ -54,6 +54,11 @@
             "r4idsn/*"
         ]
     },
+    "STARGATE": {
+        "miniboot_paths": [
+            "stargate/*"
+        ]
+    },
     "SUPERCARD": {
     }
 }

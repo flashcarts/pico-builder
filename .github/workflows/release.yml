@@ -79,6 +79,8 @@ jobs:
             pico_platform: AK2
           - name: "R4iDSN"
             pico_platform: R4iDSN
+          - name: "STARGATE"
+            pico_platform: STARGATE
           - name: "SUPERCARD"
             pico_platform: SUPERCARD
     runs-on: ubuntu-latest
@@ -104,7 +106,7 @@ jobs:
           path: miniboot
       - name: Download loader
         run: |
-          curl -LO https://github.com/LNH-team/pico-loader/releases/download/v1.2.0/Pico_Loader_${{ matrix.platform.pico_platform }}.zip
+          curl -LO https://github.com/LNH-team/pico-loader/releases/download/v1.3.0/Pico_Loader_${{ matrix.platform.pico_platform }}.zip
           mkdir -p pico_loader/_pico
           cd pico_loader/_pico && unzip ../../Pico_Loader_${{ matrix.platform.pico_platform }}.zip
       - uses: actions/setup-python@v6
