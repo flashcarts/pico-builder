@@ -35,7 +35,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: 'LNH-team/pico-launcher'
-          ref: v1.0.0
+          ref: v1.1.0
           submodules: true
       - name: Run build script
         run: |
@@ -73,8 +73,14 @@ jobs:
             pico_platform: G003
           - name: "GWBLUE"
             pico_platform: ACE3DS
+          - name: "M3CF"
+            pico_platform: M3CF
           - name: "M3DS"
             pico_platform: M3DS
+          - name: "MMCF"
+            pico_platform: MMCF
+          - name: "MPCF"
+            pico_platform: MPCF
           - name: "R4"
             pico_platform: R4
           - name: "R4DSPRO"
@@ -85,6 +91,8 @@ jobs:
             pico_platform: STARGATE
           - name: "SUPERCARD"
             pico_platform: SUPERCARD
+          - name: "SUPERCARDCF"
+            pico_platform: SUPERCARDCF
     runs-on: ubuntu-latest
     needs: [
       miniboot,
@@ -108,9 +116,24 @@ jobs:
           path: miniboot
       - name: Download loader
         run: |
-          curl -LO https://github.com/LNH-team/pico-loader/releases/download/v1.3.1/Pico_Loader_${{ matrix.platform.pico_platform }}.zip
+          curl -LO https://github.com/LNH-team/pico-loader/releases/download/v1.4.0/Pico_Loader_${{ matrix.platform.pico_platform }}.zip
           mkdir -p pico_loader/_pico
           cd pico_loader/_pico && unzip ../../Pico_Loader_${{ matrix.platform.pico_platform }}.zip
+      - name: Download DLDI
+        uses: actions/checkout@v6
+        with:
+            repository: 'DS-Homebrew/DLDI'
+            ref: builds
+            path: 'dldi'
+      - name: Download extras
+        run: |
+          mkdir extras
+          cd extras
+          if [[ $BUILD_PLATFORM == "M3CF" ]]; then
+            curl -LO https://files.deletecat.com/misc/m3powerloader.bin
+          fi
+          curl -LO https://raw.githubusercontent.com/devkitPro/dstools/refs/heads/master/src/dlditool/dlditool.c
+          gcc ./dlditool.c -o dlditool
       - uses: actions/setup-python@v6
         with:
           python-version: '3.13' 

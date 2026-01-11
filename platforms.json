@@ -14,6 +14,7 @@
     "AKRPG": {
     },
     "DATEL": {
+        "dldi": "gmtf.dldi"
     },
     "DSPICO": {
     },
@@ -36,10 +37,20 @@
             "gwblue/*"
         ]
     },
+    "M3CF": {
+        "dldi": "m3cf.dldi",
+        "prepend": "extras/m3powerloader.bin"
+    },
     "M3DS": {
         "miniboot_paths": [
             "m3ds/*"
         ]
+    },
+    "MMCF": {
+        "dldi": "mmcf.dldi"
+    },
+    "MPCF": {
+        "dldi": "mpcf.dldi"
     },
     "R4": {
         "miniboot_paths": [
@@ -62,5 +73,8 @@
         ]
     },
     "SUPERCARD": {
+    },
+    "SUPERCARDCF": {
+        "dldi": "sccf.dldi"
     }
 }
