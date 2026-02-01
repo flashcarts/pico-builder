@@ -116,7 +116,7 @@ jobs:
           path: miniboot
       - name: Download loader
         run: |
-          curl -LO https://github.com/LNH-team/pico-loader/releases/download/v1.4.0/Pico_Loader_${{ matrix.platform.pico_platform }}.zip
+          curl -LO https://github.com/LNH-team/pico-loader/releases/download/v1.5.0/Pico_Loader_${{ matrix.platform.pico_platform }}.zip
           mkdir -p pico_loader/_pico
           cd pico_loader/_pico && unzip ../../Pico_Loader_${{ matrix.platform.pico_platform }}.zip
       - name: Download DLDI
