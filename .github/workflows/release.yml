@@ -35,7 +35,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: 'LNH-team/pico-launcher'
-          ref: v1.1.0
+          ref: v1.2.0
           submodules: true
       - name: Run build script
         run: |
@@ -116,7 +116,7 @@ jobs:
           path: miniboot
       - name: Download loader
         run: |
-          curl -LO https://github.com/LNH-team/pico-loader/releases/download/v1.5.0/Pico_Loader_${{ matrix.platform.pico_platform }}.zip
+          curl -LO https://github.com/LNH-team/pico-loader/releases/download/v1.6.0/Pico_Loader_${{ matrix.platform.pico_platform }}.zip
           mkdir -p pico_loader/_pico
           cd pico_loader/_pico && unzip ../../Pico_Loader_${{ matrix.platform.pico_platform }}.zip
       - name: Download DLDI
