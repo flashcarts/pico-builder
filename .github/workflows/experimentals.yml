@@ -90,7 +90,7 @@ jobs:
       pico_loader
     ]
     env:
-      BUILD_PLATFORM: ${{ matrix.platform.name }}
+      BUILD_PLATFORM: ${{ matrix.platform.pico_platform }}
     name: Package zips
     steps:
       - name: Checkout repo
