@@ -26,31 +26,6 @@ jobs:
           path: dist
           name: miniboot_dist
 
-  pico_launcher:
-    runs-on: ubuntu-latest
-    container: skylyrac/blocksds:slim-v1.16.0
-    name: Build Pico Launcher
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v6
-        with:
-          repository: 'LNH-team/pico-launcher'
-          ref: v1.3.0
-          submodules: true
-      - name: Run build script
-        run: |
-          make -j`nproc`
-      - name: Build file structure
-        run: |
-          mkdir out
-          cp LAUNCHER.nds out/_picoboot.nds
-          cp -r _pico out/
-      - name: Publish build to GH Actions
-        uses: actions/upload-artifact@v5
-        with:
-          path: out
-          name: pico_launcher
-
   pico_package:
     strategy:
       matrix:
@@ -95,8 +70,7 @@ jobs:
             pico_platform: SUPERCARDCF
     runs-on: ubuntu-latest
     needs: [
-      miniboot,
-      pico_launcher
+      miniboot
     ]
     env:
       BUILD_PLATFORM: ${{ matrix.platform.name }}
@@ -105,10 +79,11 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6
       - name: Download launcher
-        uses: actions/download-artifact@v6
-        with:
-          name: pico_launcher
-          path: pico_launcher
+        run: |
+          curl -LO https://github.com/LNH-team/pico-launcher/releases/download/v1.3.0/Pico_Launcher.zip
+          mkdir -p pico_launcher/
+          cd pico_launcher && unzip ../Pico_Launcher.zip
+          mv LAUNCHER.nds _picoboot.nds
       - name: Download miniboot
         uses: actions/download-artifact@v6
         with:
