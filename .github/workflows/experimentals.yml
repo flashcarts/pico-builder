@@ -1,0 +1,164 @@
+name: Build Pico packages - experimental
+
+on:
+  workflow_dispatch:
+
+jobs:
+  miniboot:
+    runs-on: ubuntu-latest
+    container: skylyrac/blocksds:slim-latest
+    name: Build miniboot
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+        with:
+          repository: 'lifehackerhansol/nds-miniboot'
+          ref: picoboot
+          submodules: true
+      - name: Run build script
+        run: |
+          make -j`nproc`
+      - name: Publish build to GH Actions
+        uses: actions/upload-artifact@v5
+        with:
+          path: dist
+          name: miniboot_dist
+
+  pico_loader:
+    strategy:
+      matrix:
+        platform:
+          - name: "DSTT"
+            branch: dstt-dma
+          - name: "AK2"
+            branch: rpg-dma
+          - name: "AKRPG"
+            branch: rpg-dma
+          - name: "R4iDSN"
+            branch: rpg-dma
+          - name: "M3DS"
+            branch: m3ds-dma
+    runs-on: ubuntu-latest
+    container: skylyrac/blocksds:slim-v1.13.1
+    name: Build Pico Loader
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+      DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: 1
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+        with:
+          repository: 'flashcarts/pico-loader'
+          ref: ${{ matrix.platform.branch }}
+          submodules: true
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 9.x
+      - name: Run build script
+        run: |
+          make PICO_PLATFORM=${{ matrix.platform.name }}
+      - name: Build file structure
+        run: |
+          mkdir -p out/_pico
+          cp picoLoader7.bin out/_pico/
+          cp picoLoader9_${{ matrix.platform.name }}.bin out/_pico/picoLoader9.bin
+          cp data/*.bin out/_pico/
+      - name: Publish build to GH Actions
+        uses: actions/upload-artifact@v5
+        with:
+          path: out
+          name: pico_loader_${{ matrix.platform.name }}
+
+  pico_package:
+    strategy:
+      matrix:
+        platform:
+          - name: "DSTT_DMA"
+            pico_platform: DSTT
+          - name: "AK2_DMA"
+            pico_platform: AK2
+          - name: "AKRPG_DMA"
+            pico_platform: AKRPG
+          - name: "R4iDSN_DMA"
+            pico_platform: R4iDSN
+          - name: "M3DS_DMA"
+            pico_platform: M3DS
+    runs-on: ubuntu-latest
+    needs: [
+      miniboot,
+      pico_loader
+    ]
+    env:
+      BUILD_PLATFORM: ${{ matrix.platform.name }}
+    name: Package zips
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+      - name: Download launcher
+        run: |
+          curl -LO https://github.com/LNH-team/pico-launcher/releases/download/v1.3.0/Pico_Launcher.zip
+          mkdir -p pico_launcher/
+          cd pico_launcher && unzip ../Pico_Launcher.zip
+          mv LAUNCHER.nds _picoboot.nds
+      - name: Download miniboot
+        uses: actions/download-artifact@v6
+        with:
+          name: miniboot_dist
+          path: miniboot
+      - name: Download loader
+        uses: actions/download-artifact@v6
+        with:
+          name: pico_loader_${{ matrix.platform.pico_platform }}
+          path: pico_loader
+      - name: Download DLDI
+        uses: actions/checkout@v6
+        with:
+            repository: 'DS-Homebrew/DLDI'
+            ref: builds
+            path: 'dldi'
+      - name: Download extras
+        run: |
+          mkdir extras
+          cd extras
+          if [[ $BUILD_PLATFORM == "M3CF" ]]; then
+            curl -LO https://files.deletecat.com/misc/m3powerloader.bin
+          fi
+          curl -LO https://raw.githubusercontent.com/devkitPro/dstools/refs/heads/master/src/dlditool/dlditool.c
+          gcc ./dlditool.c -o dlditool
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - name: Package
+        run: python3 packager.py
+      - name: Publish build to GH Actions
+        uses: actions/upload-artifact@v5
+        with:
+          path: out
+          name: pico_package_${{ matrix.platform.name }}
+
+  pico_deployment:
+    runs-on: ubuntu-24.04
+    needs: pico_package
+    name: Deploy to host
+    steps:
+      - uses: actions/download-artifact@v6
+        with:
+          pattern: pico_package_*
+          path: package
+      - name: Re-zip packages because GitHub sucks
+        run: |
+          mkdir -p out/package
+          MY_WD=$PWD
+          for i in package/*; do
+            cd $i
+            zip -r $MY_WD/out/$i.zip *
+            cd $MY_WD
+          done
+      - name: Publish
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.STORAGE_USER }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.STORAGE_KEY }}
+          AWS_ENDPOINT_URL: ${{ secrets.STORAGE_HOST }}
+        run: |
+          aws s3 sync out/package/ s3://${{ secrets.STORAGE_BUCKET }}/experimental/
